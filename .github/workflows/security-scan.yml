@@ -8,12 +8,12 @@ on:
 
 permissions:
   contents: read
-  security-events: write   # needed for CodeQL to upload SARIF
+  security-events: write
   actions: read
 
 jobs:
 
-  # ─── Job 1: Semgrep with custom Joplin rules ────────────────────────────────
+  # ─── Job 1: Semgrep with custom Joplin rules ──────────────────────────────
   semgrep:
     name: Semgrep (Custom Joplin Rules)
     runs-on: ubuntu-latest
@@ -24,25 +24,34 @@ jobs:
       - name: Install Semgrep
         run: pip install semgrep --quiet
 
+      - name: Validate custom rules
+        run: semgrep --validate --config .semgrep/joplin-rules.yml
+
       - name: Run Semgrep with custom rules
+        # Exit codes: 0 = clean, 1 = findings, 2 = error
+        # We capture all and let the report job decide severity
         run: |
           semgrep \
             --config .semgrep/joplin-rules.yml \
             --json \
             --output semgrep-results.json \
-            --no-error \
-            src/
-        # --no-error means the step won't fail even if findings exist
-        # we handle the exit logic in the report job
+            src/ || EXIT=$?
+          if [ "${EXIT}" = "2" ]; then
+            echo "Semgrep encountered an error (exit 2). Check rule syntax."
+            exit 2
+          fi
+          echo "Semgrep finished. Exit code: ${EXIT:-0}"
+          exit 0
 
-      - name: Upload Semgrep results as artifact
+      - name: Upload Semgrep results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-results
           path: semgrep-results.json
           retention-days: 7
 
-  # ─── Job 2: CodeQL analysis ─────────────────────────────────────────────────
+  # ─── Job 2: CodeQL with custom + default queries ───────────────────────────
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
@@ -54,8 +63,8 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
-          # Using the security-extended query suite for broader coverage
-          queries: security-extended
+          # + means: run default security-extended AND our custom queries
+          queries: security-extended,+.github/codeql/custom-queries
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
@@ -63,24 +72,22 @@ jobs:
       - name: Run CodeQL analysis
         uses: github/codeql-action/analyze@v3
         with:
-          # Save SARIF locally so we can include it in the combined report
           output: codeql-sarif
-          # Also uploads to GitHub Security tab automatically
           upload: true
 
       - name: Upload CodeQL SARIF as artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: codeql-sarif
           path: codeql-sarif/
           retention-days: 7
 
-  # ─── Job 3: Merge results and generate combined report ───────────────────────
+  # ─── Job 3: Merge results into single report ───────────────────────────────
   report:
     name: Generate Combined Security Report
     runs-on: ubuntu-latest
     needs: [semgrep, codeql]
-    # Run report even if scanners found issues (but not if they crashed)
     if: always()
     steps:
       - name: Checkout repository
@@ -96,7 +103,6 @@ jobs:
         with:
           name: semgrep-results
           path: .
-        # continue even if semgrep artifact is missing
         continue-on-error: true
 
       - name: Download CodeQL SARIF results
@@ -108,10 +114,8 @@ jobs:
 
       - name: Generate combined report
         run: node scripts/merge-security-reports.js
-        # Script exits with code 1 if high severity findings exist
-        # which will mark this job (and the overall workflow) as failed
 
-      - name: Upload combined report as artifact
+      - name: Upload combined report
         if: always()
         uses: actions/upload-artifact@v4
         with:
