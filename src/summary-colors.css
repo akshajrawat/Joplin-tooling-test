@@ -1,0 +1,12 @@
+.highlights-only blockquote mark {
+    background: tomato;
+    color: black;
+}
+
+.highlights-only blockquote:has(mark) {
+    opacity: 0.7;
+}
+
+.highlights-only blockquote mark a, .highlights-only blockquote mark a:visited {
+    color: #fff176;
+}

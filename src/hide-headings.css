@@ -1,0 +1,3 @@
+.highlights-only h1, .highlights-only h2, .highlights-only h3, .highlights-only h4, .highlights-only h5, .highlights-only h6 {
+    display: none !important;
+}

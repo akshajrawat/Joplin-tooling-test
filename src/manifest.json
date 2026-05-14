@@ -1,14 +1,47 @@
 {
 	"manifest_version": 1,
-	"id": "com.Plugin.ToWebSearchEngine",
-	"app_min_version": "2.11",
-	"version": "1.0.1",
-	"name": "ToWebSearchEngine",
-	"description": "Selected Text to ToWebSearchEngine ",
-	"author": "joe",
-	"homepage_url": "https://vocus.cc/user/@fishpcinfo",
-	"repository_url": "https://github.com/fishpcblog/joplin-plugin-ToWebSearchEngine",
-	"keywords": [],
-	"categories": [],
-	"screenshots": []
+	"id": "com.joplin.plugin.toggle-highlights-only-display",
+	"app_min_version": "3.5",
+	"version": "1.0.18",
+	"name": "Toggle highlights-only display",
+	"description": "This plugin can be used to toggle between highlights-only display or complete text of a note",
+	"author": "Alex Pot",
+	"homepage_url": "",
+	"repository_url": "https://github.com/smartscripts-nl/joplin-plugin-toggle-highlights-only-display",
+	"keywords": [
+		"highlights"
+	],
+	"categories": [
+		"viewer"
+	],
+	"screenshots": [
+		{
+			"src": "screenshots/1-hilights-only-mode-disabled.png",
+			"label": "Note with hilights-mode disabled"
+		},
+		{
+			"src": "screenshots/2-default-hilights-only-look.png",
+			"label": "Default look of note with hilights-mode enabled"
+		},
+		{
+			"src": "screenshots/3-no-highlights-notification-default-look.png",
+			"label": "Default look for pages without highlights, when highlights-only mode was enabled"
+		},
+		{
+			"src": "screenshots/4-highlights-only-with-user-css.png",
+			"label": "Look of note with user-defined CSS for highlights-mode enabled"
+		},
+		{
+			"src": "screenshots/5-plugin-settings.png",
+			"label": "Settings section of the plugin in the Joplin app settings"
+		}
+	],
+	"platforms": [
+		"desktop"
+	],
+	"icons": {},
+	"promo_tile": {
+		"src": "screenshots/promo_tile.png",
+		"label": "a page containing highlights"
+	}
 }

@@ -1,0 +1,51 @@
+.highlights-only p:not(:has(mark)), .highlights-only li:not(:has(mark)) {
+  display: none;
+}
+
+.highlights-only p:has(mark) {
+  margin: 1em .8em;
+}
+
+.highlights-only li:has(mark) p {
+    margin: 0;
+    padding: 0;
+    text-indent: 0;
+}
+
+.highlights-only li:has(mark) {
+    list-style: inside;
+}
+
+.highlights-only mark {
+    display: block;
+    border-radius: 4px;
+    padding: .5em;
+    background: transparent;
+    color: rgb(254, 235, 201);
+}
+
+.highlights-only li mark {
+    display: inline-block;
+}
+
+.highlights-only mark a {
+    color: orange;
+    font-weight: normal;
+}
+
+.highlights-only span.hide-around-highlight, .highlights-only hr {
+    display: none;
+}
+
+/* Status indicator */
+.highlights-only::before {
+    content: "🖍️️ highlights-only mode enabled...";
+    display: block;
+    background: lightblue;
+    color: black;
+    padding: 4px 8px;
+    font-weight: bold;
+    margin-bottom: 11px;
+    text-align: center;
+    border-radius: 4px;
+}
