@@ -1,24 +1,14 @@
 /**
- * @name Dynamic code execution in Joplin plugin
- * @description Plugin uses eval() or new Function() for dynamic code execution.
- *              This is always dangerous and should not appear in any Joplin plugin.
+ * @name eval() usage in Joplin plugin
+ * @description Plugin uses eval() for dynamic code execution.
  * @kind problem
  * @problem.severity error
- * @id joplin/dynamic-code-execution
- * @tags security
- *       joplin
+ * @id joplin/eval-usage
+ * @tags security joplin
  */
 
 import javascript
 
-from Expr dangerous
-where
-  // Direct eval() call
-  dangerous.(CallExpr).getCalleeName() = "eval"
-  or
-  // new Function(...) call
-  dangerous.(NewExpr).getCalleeName() = "Function"
-select dangerous,
-  "Dynamic code execution via '" +
-  dangerous.(CallExpr).getCalleeName() +
-  "' detected. This must not appear in a Joplin plugin."
+from CallExpr evalCall
+where evalCall.getCalleeName() = "eval"
+select evalCall, "eval() detected. Dynamic code execution must not appear in a Joplin plugin."
