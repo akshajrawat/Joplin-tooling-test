@@ -1,0 +1,131 @@
+rules:
+
+  # Rule 1: External network calls - data exfiltration risk
+  - id: joplin-external-fetch
+    patterns:
+      - pattern: fetch($URL, ...)
+      - pattern-not: fetch("http://localhost:...", ...)
+      - pattern-not: fetch("http://127.0.0.1:...", ...)
+    message: |
+      External fetch() call detected: '$URL'.
+      Plugins should not make outbound network requests unless explicitly required.
+      Verify this is not exfiltrating note data.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      joplin-specific: true
+
+  # Rule 2: axios external calls
+  - id: joplin-external-axios
+    patterns:
+      - pattern: axios.get($URL, ...)
+      - pattern-not: axios.get("http://localhost:...", ...)
+    message: |
+      External axios call detected: '$URL'.
+      Verify this is not sending user note data to an external server.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      joplin-specific: true
+
+  # Rule 3: joplin.data inside setInterval - polling exfiltration pattern
+  - id: joplin-data-in-interval
+    patterns:
+      - pattern: |
+          setInterval(function() {
+            ...
+            joplin.data.$METHOD(...)
+            ...
+          }, ...)
+      - pattern: |
+          setInterval(() => {
+            ...
+            joplin.data.$METHOD(...)
+            ...
+          }, ...)
+    message: |
+      joplin.data.$METHOD() is being called inside setInterval().
+      This pattern can be used to continuously poll and exfiltrate note content.
+      Ensure this is intentional and necessary.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      joplin-specific: true
+
+  # Rule 4: child_process usage
+  - id: joplin-child-process
+    pattern: require("child_process")
+    message: |
+      Direct child_process usage detected.
+      Plugins should not spawn system processes. This is a high-risk pattern.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      joplin-specific: true
+
+  # Rule 5: Direct filesystem access
+  - id: joplin-fs-access
+    patterns:
+      - pattern: require("fs")
+      - pattern: require("fs/promises")
+    message: |
+      Direct filesystem access via require('fs') detected.
+      Plugins should use Joplin's data API instead of accessing the filesystem directly.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      joplin-specific: true
+
+  # Rule 6: eval() usage - always dangerous
+  - id: joplin-eval-usage
+    patterns:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+    message: |
+      eval() or new Function() detected.
+      Dynamic code execution is dangerous and should never appear in a Joplin plugin.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      joplin-specific: true
+
+  # Rule 7: joplin.data result piped into network call
+  - id: joplin-data-exfiltration-pattern
+    patterns:
+      - pattern: |
+          $DATA = await joplin.data.$METHOD(...)
+          ...
+          fetch($URL, {body: ...$DATA...})
+      - pattern: |
+          $DATA = await joplin.data.$METHOD(...)
+          ...
+          axios.$AXIOSMETHOD($URL, $DATA)
+    message: |
+      Data from joplin.data.$METHOD() is being sent to an external URL.
+      This is a high-confidence exfiltration pattern. Review immediately.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      joplin-specific: true
+
+  # Rule 8: Hardcoded secrets / API keys
+  - id: joplin-hardcoded-secret
+    patterns:
+      - pattern: $KEY = "sk-..."
+      - pattern: $KEY = "ghp_..."
+      - pattern: $KEY = "AIza..."
+    message: |
+      Possible hardcoded API key or secret detected.
+      Never hardcode credentials inside a plugin. Use joplin.settings instead.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      joplin-specific: true
