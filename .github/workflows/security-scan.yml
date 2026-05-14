@@ -28,8 +28,6 @@ jobs:
         run: semgrep --validate --config .semgrep/joplin-rules.yml
 
       - name: Run Semgrep with custom rules
-        # Exit codes: 0 = clean, 1 = findings, 2 = error
-        # We capture all and let the report job decide severity
         run: |
           semgrep \
             --config .semgrep/joplin-rules.yml \
@@ -37,7 +35,7 @@ jobs:
             --output semgrep-results.json \
             src/ || EXIT=$?
           if [ "${EXIT}" = "2" ]; then
-            echo "Semgrep encountered an error (exit 2). Check rule syntax."
+            echo "Semgrep encountered a rule error (exit 2). Check rule syntax."
             exit 2
           fi
           echo "Semgrep finished. Exit code: ${EXIT:-0}"
@@ -60,17 +58,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
-          # + means: run default security-extended AND our custom queries
-          queries: security-extended,+.github/codeql/custom-queries
+          # Use config file to correctly load local custom queries
+          config-file: .github/codeql/codeql-config.yml
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
 
       - name: Run CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           output: codeql-sarif
           upload: true

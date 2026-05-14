@@ -1,0 +1,5 @@
+name: "Joplin Plugin Security Config"
+
+queries:
+  - uses: security-extended
+  - uses: ./.github/codeql/custom-queries
